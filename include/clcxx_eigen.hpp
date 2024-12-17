@@ -67,6 +67,53 @@ class EigenMatWrapper : public EigenT {
   type inv() { return static_cast<type>(this->inverse()); }
   type trans() { return static_cast<type>(this->transpose()); }
   ElementT det() { return this->determinant(); }
+  ElementT dot(const type& m) { return Eigen::VectorXd(*this).dot(Eigen::VectorXd(m)); }
+  ElementT thresholdQR() {
+      return static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).threshold();
+  }
+  void setThresholdQR(ElementT threshold) {
+      static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).setThreshold(threshold);
+  }
+  type computeQR() {
+      Eigen::FullPivHouseholderQR<EigenT> qr;
+      qr.compute(*this);
+      return static_cast<type>(qr.matrixQR());
+  }
+  type matrixQR() {
+      return static_cast<type>(static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).matrixQR());
+  }
+  Eigen::Index QR_rows() {
+      return static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).rows();
+  }
+  Eigen::Index QR_cols() {
+      return static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).cols();
+  }
+  Eigen::Index QR_rank() {
+      return static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).rank();
+  }
+  type QR_topRows_TriangularViewUpper_Transpose_SolveOnTheRight (Eigen::Index rows, Eigen::Index cols, const type& m) {
+      return type(static_cast<EigenT>(static_cast<EigenT>(static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).matrixQR()).topRows(rows)).triangularView<Eigen::Upper>().transpose().solve<Eigen::OnTheRight>((EigenT)m.leftCols(cols)));
+  }
+  type QR_topRows_TriangularViewUpper(Eigen::Index rows) {
+      return type(static_cast<EigenT>(*this).topRows(rows).triangularView<Eigen::Upper>());
+  }
+  type matrixQ() {
+      return static_cast<type>(static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).matrixQ());
+  }
+  type triangularViewQR() {
+      return static_cast<type>((*this).template triangularView<Eigen::Upper>());
+  }
+  type colsPermutation() {
+      return static_cast<type>(static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).colsPermutation());
+  }
+  Eigen::Index colsPermutationIndicesRow(int row) {
+      return static_cast<Eigen::FullPivHouseholderQR<EigenT>>(*this).colsPermutation().indices()[row];
+  }
+
+
+
+  type topRows(int count) { return static_cast<type>((static_cast<EigenT>(*this)).topRows(count)); }
+
   Eigen::Index rankLU() {
     Eigen::FullPivLU<EigenT> lu(*this);
     return lu.rank();
@@ -132,5 +179,25 @@ class EigenMatWrapper : public EigenT {
   }
   void setFromArray(ElementT arr[], Eigen::Index i, Eigen::Index j) {
     *this = Eigen::Map<RowMatrix>(arr, i, j);
+  }
+  type fullPivLuSolve(type b) {
+      return static_cast<type>(static_cast<EigenT>(*this).fullPivLu().solve(static_cast<EigenT>(b)));
+  }
+  double infinityLpNorm() {
+      //EigenT matrix(*this);
+      return (double)((EigenT)(*this)).lpNorm<Eigen::Infinity>();
+  }
+  double oneLpNorm() {
+      //EigenT matrix(*this);
+      return (double)((EigenT)(*this)).lpNorm<1>();
+  }
+  type replicate() {
+      return static_cast<type>(static_cast<EigenT>(*this).replicate(1,1));
+  }
+  type scalemult(ElementT& s) {
+      return type(s * *this);
+  }
+  type pseudoInverse() {
+      return static_cast<type>(static_cast<EigenT>(*this).completeOrthogonalDecomposition().pseudoInverse());
   }
 };

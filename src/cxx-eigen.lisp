@@ -2,13 +2,13 @@
 (in-package :cxx-eigen)
 
 (defun init ()
-  (pushnew (merge-pathnames #p"common-lisp/programs/cl-cxx-eigen/lib/"
+  (pushnew (merge-pathnames #p"cl-cxx-eigen/build/Debug/"
                             (user-homedir-pathname))
            cffi:*foreign-library-directories*
            :test #'equal)
 
   (cffi:define-foreign-library my-lib
-    (t (:default "libclcxx-eigen")))
+    (t (:default "clcxx-eigen")))
 
   (cffi:use-foreign-library my-lib)
   (cxx:init)
